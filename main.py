@@ -9,28 +9,104 @@ from datetime import datetime
 # ⚙️ إعداد الصفحة
 # =========================
 st.set_page_config(
-    page_title="ACU Pro Intelligence",
+    page_title="ACU Intelligence System",
     layout="wide",
     page_icon="🧠"
 )
 
 # =========================
-# 🎨 تصميم احترافي
+# 🎬 CSS سينمائي احترافي
 # =========================
 st.markdown("""
 <style>
-.stApp { background-color: #030303; }
-h1, h2, h3, p, span, label {
-    color: #00ffcc !important;
-    font-family: monospace;
+
+.stApp {
+    background: radial-gradient(circle, #010101, #000000);
+    color: #00ffcc;
+    font-family: 'Courier New', monospace;
 }
+
+/* Grid استخباراتي */
+.stApp::before {
+    content: "";
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background-image:
+        linear-gradient(rgba(0,255,204,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,255,204,0.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+    z-index: 0;
+}
+
+/* العناوين */
+h1, h2, h3 {
+    text-shadow: 0 0 10px #00ffcc, 0 0 20px #00ffcc;
+}
+
+/* Cursor */
+h1::after {
+    content: "|";
+    animation: blink 1s infinite;
+}
+@keyframes blink {
+    50% {opacity:0;}
+}
+
+/* كارد */
 .block {
-    background: #0a0a0a;
+    background: rgba(0,255,204,0.05);
     border: 1px solid #00ffcc;
-    padding: 15px;
     border-radius: 10px;
+    padding: 15px;
     margin-bottom: 10px;
+    box-shadow: 0 0 10px #00ffcc;
+    transition: 0.3s;
 }
+.block:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 25px #00ffcc;
+}
+
+/* أزرار */
+.stButton>button {
+    background: black;
+    color: #00ffcc;
+    border: 1px solid #00ffcc;
+    box-shadow: 0 0 10px #00ffcc;
+}
+.stButton>button:hover {
+    background: #00ffcc;
+    color: black;
+}
+
+/* إدخال */
+.stTextInput input {
+    background: black;
+    color: #00ffcc;
+    border: 1px solid #00ffcc;
+}
+
+/* Sidebar */
+section[data-testid="stSidebar"] {
+    background: #000;
+    border-right: 1px solid #00ffcc;
+}
+
+/* Scan lines */
+body::after {
+    content: "";
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+        transparent,
+        transparent 2px,
+        rgba(0,255,204,0.03) 3px
+    );
+    pointer-events: none;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -46,7 +122,7 @@ def ip_lookup(target):
     return requests.get(f"http://ip-api.com/json/{target}").json()
 
 # =========================
-# 🧠 تحليل تهديد بسيط
+# 🧠 تحليل تهديد
 # =========================
 def threat_score(text):
     keywords = ["ransomware", "attack", "breach", "exploit", "malware"]
@@ -54,9 +130,9 @@ def threat_score(text):
     return min(score * 20, 100)
 
 # =========================
-# 🌐 DNS lookup
+# 🌐 DNS
 # =========================
-def resolve_domain(domain):
+def resolve(domain):
     try:
         return socket.gethostbyname(domain)
     except:
@@ -65,13 +141,14 @@ def resolve_domain(domain):
 # =========================
 # 🧠 UI
 # =========================
-st.title("🧠 ACU Pro Intelligence System")
+st.title("🧠 ACU Intelligence System")
+st.write("---")
 
-menu = st.sidebar.selectbox("📊 اختر:", [
+menu = st.sidebar.selectbox("📊 التحكم", [
     "Threat Feed",
     "IP Analyzer",
     "Domain Intelligence",
-    "Dashboard Stats"
+    "Dashboard"
 ])
 
 # =========================
@@ -79,7 +156,7 @@ menu = st.sidebar.selectbox("📊 اختر:", [
 # =========================
 if menu == "Threat Feed":
 
-    st.subheader("📡 Live Cyber Threats")
+    st.subheader("📡 Live Threat Intelligence")
 
     feeds = {
         "HackerNews": "https://feeds.feedburner.com/TheHackersNews",
@@ -91,12 +168,13 @@ if menu == "Threat Feed":
     for name, url in feeds.items():
         feed = get_feed(url)
 
-        for e in feed.entries[:10]:
+        for e in feed.entries[:8]:
             score = threat_score(e.title + e.summary)
+
             data.append({
                 "Source": name,
                 "Title": e.title,
-                "Threat Score": score,
+                "Threat": score,
                 "Link": e.link
             })
 
@@ -104,62 +182,63 @@ if menu == "Threat Feed":
 
     st.dataframe(df, use_container_width=True)
 
-    # تنبيه
-    high_threats = df[df["Threat Score"] > 60]
-    if not high_threats.empty:
-        st.error(f"🚨 {len(high_threats)} تهديد عالي الخطورة!")
+    high = df[df["Threat"] > 60]
+    if not high.empty:
+        st.error(f"🚨 {len(high)} HIGH THREATS DETECTED")
 
 # =========================
 # 🔹 IP Analyzer
 # =========================
 elif menu == "IP Analyzer":
 
-    target = st.text_input("🌐 أدخل IP أو Domain")
+    st.subheader("🌐 IP Intelligence")
 
-    if st.button("تحليل"):
+    target = st.text_input("Enter IP or Domain")
 
-        if target:
-            res = ip_lookup(target)
+    if st.button("Analyze"):
 
-            if res.get("status") == "success":
+        res = ip_lookup(target)
 
-                st.success("تم التحليل")
+        if res.get("status") == "success":
 
-                st.json(res)
+            st.success("Analysis Complete")
 
-                # خريطة
-                st.map(pd.DataFrame({
-                    "lat": [res["lat"]],
-                    "lon": [res["lon"]]
-                }))
+            st.json(res)
+
+            st.map(pd.DataFrame({
+                "lat": [res["lat"]],
+                "lon": [res["lon"]]
+            }))
 
 # =========================
-# 🔹 Domain Intelligence
+# 🔹 Domain
 # =========================
 elif menu == "Domain Intelligence":
 
-    domain = st.text_input("🔎 Domain")
+    st.subheader("🔎 Domain Intelligence")
 
-    if st.button("تحليل Domain"):
+    domain = st.text_input("Enter Domain")
 
-        ip = resolve_domain(domain)
+    if st.button("Resolve"):
+
+        ip = resolve(domain)
 
         if ip:
-            st.success(f"IP: {ip}")
+            st.success(f"Resolved IP: {ip}")
         else:
-            st.error("فشل التحليل")
+            st.error("Failed")
 
 # =========================
 # 🔹 Dashboard
 # =========================
-elif menu == "Dashboard Stats":
+elif menu == "Dashboard":
 
-    st.subheader("📊 System Overview")
+    st.subheader("📊 System Dashboard")
 
-    col1, col2, col3 = st.columns(3)
+    c1, c2, c3 = st.columns(3)
 
-    col1.metric("Threat Sources", "2")
-    col2.metric("Scanned Today", "128")
-    col3.metric("High Risk", "7")
+    c1.metric("Sources", "2")
+    c2.metric("Scanned", "120+")
+    c3.metric("Threats", "5")
 
-    st.info("⚡ النظام يعمل بكفاءة")
+    st.info("🟢 SYSTEM ACTIVE")
